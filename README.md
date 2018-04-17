@@ -1,158 +1,71 @@
-## Repo for Microsoft Windows and Linux ##
+Repo部署
 
-This is E.S.R.Labs Repo - just like Google Repo but this one also runs under Microsoft Windows.
-For more information, see [Version Control with Repo and Git](http://source.android.com/source/using-repo.html).
+项目git仓库比较多，一次修改可能涉及多个仓库，所以要应用多仓库功能，引入Repo。
 
-Repo is a repository management tool that Google built on top of Git. Repo unifies many Git repositories when necessary,
-does the uploads to a revision control system, and automates parts of the development workflow.
-Repo is not meant to replace Git, only to make it easier to work with Git in the context of multiple repositories.
-The repo command is an executable Python script that you can put anywhere in your path.
-In working with the source files, you will use Repo for across-network operations.
-For example, with a single Repo command you can download files from multiple repositories into your local working directory.
+#### 背景：
+- Git环境搭配好
+- 安装Python27（必须是2.7，3.x版本暂时不支持）
 
+#### 1、
 
-### Setup steps for Microsoft Windows ###
+获取 url，本地下载并设置环境变量。[(esrlabs 参考)](https://github.com/esrlabs/git-repo)
 
-##### Fix priviledges to allow for creation of symbolic links #####
-* If you are a member of the Administrators group you have to [turn off User Access Control (UAC)](http://windows.microsoft.com/en-us/windows7/turn-user-account-control-on-or-off) and then restart the computer.
-* Otherwise you have to adjust your user rights to [get SeCreateSymbolicLinkPrivilege priviledges](http://stackoverflow.com/questions/6722589/using-windows-mklink-for-linking-2-files).
-The editrights tools is provided as part of git-repo for Microsoft Windows.
+<pre>
+md %USERPROFILE%\bin
 
-* **Highly experimental (do not use except for developing this feature!):** If you prefer to not use symbolic links but junctions for folders and hardlinks for files instead, you have to set the following in your ~/.gitconfig:
+curl https://raw.githubusercontent.com/esrlabs/git-repo/stable/repo > 
+%USERPROFILE%/bin/repo
 
-        [portable]
-            windowsNoSymlinks = true
+curl https://raw.githubusercontent.com/esrlabs/git-repo/stable/repo.cmd > 
+%USERPROFILE%/bin/repo.cmd
 
-    This will not require to set the the priviledges as described above.
+</pre>
 
-    **Known issue:** Hard links are destroyed by git for example when you delete a branch (breaks .git/config). This will destroy the project workspace!
+`%USERPROFILE%\bin` （基本为 C:\Users\Administrator\bin）加入到环境变量中，cmd下方可执行repo命令。Win10需要重启，环境变量方可生效。
 
-##### Download and install Git #####
-* Download [Git (http://git-scm.com/downloads)](http://git-scm.com/downloads)
-* Add Git to your path environment variable: e.g. C:\Program Files (x86)\Git\cmd;
-* Add MinGW to your path environment variable: e.g. C:\Program Files (x86)\Git\bin;
+#### 2、添加节点
+<pre>
+   ~/.gitconfig:
 
-##### Download and install Python #####
-* Download [Python 2.7+ (https://www.python.org/downloads/)](https://www.python.org/downloads/)
-* Add Python to your path environment variable: e.g. C:\Python27;
-* Note: Python 3.x is supported on an experimental bases by git-repo
+  [portable]
+      windowsNoSymlinks = true
+</pre>
 
-##### Download and install Repo either using the Windows Command Shell or Git Bash #####
-###### Windows Command Shell ######
+#### 3、执行repo命令
+基础是，当前目录支持repo，也就是已经执行过 repo init操作。(**Win10下 要用管理员权限的cmd**，否则报 `repo GitError: cannot initialize work tree`。)
 
-    md %USERPROFILE%\bin
-    curl https://raw.githubusercontent.com/esrlabs/git-repo/stable/repo > %USERPROFILE%/bin/repo
-    curl https://raw.githubusercontent.com/esrlabs/git-repo/stable/repo.cmd > %USERPROFILE%/bin/repo.cmd
+举例:
+	`repo init -u git@github.com:hiltonwei/manifest -b master -m def.xml`
 
-###### Windows PowerShell ######
-
-    md $env:USERPROFILE\bin
-    curl https://raw.githubusercontent.com/esrlabs/git-repo/stable/repo > $env:USERPROFILE/bin/repo
-    curl https://raw.githubusercontent.com/esrlabs/git-repo/stable/repo.cmd > $env:USERPROFILE/bin/repo.cmd
+`-b` 指定分支
+`-m` 指定工程映射
+<p>
+manifest/default.xml 采用的 https://github.com/hiltonwei
+<p>
+manifest/def.xml      采用的 git@github.com:hiltonwei
 
 
-###### Git Bash ######
+#### 4、 repo --trace sync 带trace的日志
 
-    mkdir ~/bin
-    curl https://raw.githubusercontent.com/esrlabs/git-repo/stable/repo > ~/bin/repo
-    curl https://raw.githubusercontent.com/esrlabs/git-repo/stable/repo.cmd > ~/bin/repo.cmd
+#### 5、repo 命令略
 
-* Add Repo to your path environment variable: %USERPROFILE%\bin;
-* Create a HOME environment variable that points to %USERPROFILE% (necessary for OpenSSH to find its .ssh directory).
-* Create a GIT_EDITOR environment variable that has an editor executable as value. For this, first add the home directory of the editor executable to the path environment variable. GIT_EDITOR can than be set to "notepad++.exe", "gvim.exe", for example.
+#### 6、其他问题：
+《3》 中，如果采用def.xml中的git协议，会找不到项目地址。
+`YourPath\.repo\projects\atree.git\Config`文件中的 url是错误的。
+`url = git@github.com:hiltonwei/git@github.com:HiltonWei/atree )`
 
+需要修改 repo的python文件，manifest_xml.py的 Line:95 (`_resolveFetchUrl()` 函数内拼接 url的函数实现)。
 
-### Setup steps for Linux ###
+<pre>
+Line:95 (_resolveFetchUr()） ）
 
-##### Downloading and installing Git and Python #####
-
-    sudo apt-get install git-core
-    sudo apt-get install python
-
-##### Download and install Repo #####
-
-    $ mkdir ~/bin
-    $ PATH=~/bin:$PATH
-    $ curl https://raw.githubusercontent.com/esrlabs/git-repo/stable/repo > ~/bin/repo
-    $ chmod a+x ~/bin/repo
+    if manifestUrl.find('git@') != -1: 
+      url = url#_print("find git@")
+    elif manifestUrl.find(':') != manifestUrl.find('/') - 1:
+      url = urllib.parse.urljoin('gopher://' + manifestUrl, url)
+      url = re.sub(r'^gopher://', '', url)
+    else:
+      url = urllib.parse.urljoin(manifestUrl, url)
+</pre>
 
 
-### Usage ###
-
-For more detailed instructions regarding git-repo usage, please visit [git-repo](http://source.android.com/source/using-repo.html).
-
-#### FAQ Troubleshooting ###
-
-##### I can not see any colors for `repo status` #####
-The pager which is used for `repo status` is set per default to `less`, which unless otherwise configured will ignore escape sequences. You can set the environment variable `LESS` to `-FRSX` to make `less` handle colors.
-_(You might also want to set `LESSCHARSET` to `utf-8`)_
-
-##### It still doesn't work! ###
-You can try using `more` as your pager of choice. It doesn't behave exactly the same as `less` but it might be enough for you.
-
-    git config --global core.pager more
-
-. Alternativly, the environment variable `GIT_PAGER` can be set to `more`.
-
-##### I get a WindowsError when initializing my repo with `repo init ..` in Windows Command Shell #####
-If there is a warning at the beginning of the output which reads states that GPG is not available
-
-    warning: gpg (GnuPG) is not available.
-    warning: Installing it is strongly encouraged.
-
-you have to add `gpg.exe` to your PATH variable. The executable can be found in your Git installation folder `$GIT\usr\bin`. When you are using Git Bash, the `$Git\usr\bin` folder is already added to your PATH.
-
-
-### Changes to original git-repo ###
-
-##### Portable changes #####
-
-* Added Windows executable repo.cmd
-* Replacing usage of fcntl with sockets for Windows
-* Handling pager and coloring with subprocesses and redirects of sysin, sysout and syserr on Windows
-* Using mklink to create symbolic links on Windows (alternative: use junctions and hardlinks by setting `portable.windowsNoSymlinks = true` in ~/.gitconfig)
-* fixed some file handling issues / differences
-
-##### New Features #####
-
-* Added push.py sub command to upload and bypass the code review system.
-* Added interactive workflow test
-
-
-### Developer Information ###
-
-##### Resyncing with official google repo #####
-
-For resyncing with the official google repo git, here are the commands for resyncing with the tag v1.12.33 of the official google repo:
-
-    # add google git-repo remote with tag
-    git remote add googlesource https://android.googlesource.com/tools/repo/
-    git checkout v1.12.33 -b google-latest
-
-    # checkout basis for resync
-    git checkout google-git-repo-base -b update
-    git merge --allow-unrelated-histories -Xtheirs --squash google-latest
-    git commit -m "Update: google git-repo v1.12.33"
-    git rebase stable
-
-    # solve conflicts; keep portability in mind
-
-    git checkout stable
-    git rebase update
-
-    # cleanup
-    git branch -D update
-    git branch -D google-latest
-
-
-##### Creating a new signed version #####
-
-Commands for creating a new version of repo:
-
-    git tag -s -u KEYID v0.4.16 -m "COMMENT"
-    git push origin stable:stable
-    git push origin v0.4.16
-
-* replace `KEYID` (something like 0x..)
-* the `v0.4.16` (two times)
-* replace `COMMENT` with something more explaining

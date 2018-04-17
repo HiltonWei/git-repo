@@ -43,7 +43,7 @@ LOCAL_MANIFESTS_DIR_NAME = 'local_manifests'
 # urljoin gets confused if the scheme is not known.
 urllib.parse.uses_relative.extend(['ssh', 'git', 'persistent-https', 'rpc'])
 urllib.parse.uses_netloc.extend(['ssh', 'git', 'persistent-https', 'rpc'])
-
+  
 class _Default(object):
   """Project defaults within the manifest."""
 
@@ -65,13 +65,11 @@ class _XmlRemote(object):
                name,
                alias=None,
                fetch=None,
-               pushUrl=None,
                manifestUrl=None,
                review=None,
                revision=None):
     self.name = name
     self.fetchUrl = fetch
-    self.pushUrl = pushUrl
     self.manifestUrl = manifestUrl
     self.remoteAlias = alias
     self.reviewUrl = review
@@ -92,12 +90,18 @@ class _XmlRemote(object):
     # * no scheme in the base url, like <hostname:port>
     # We handle no scheme by replacing it with an obscure protocol, gopher
     # and then replacing it with the original when we are done.
+    #_print("mainfest_xml 102 url= %s,manUrl=%s" % (url,manifestUrl))
 
-    if manifestUrl.find(':') != manifestUrl.find('/') - 1:
+    if manifestUrl.find('git@') != -1:
+      #_print("find git@")
+      url = url
+    elif manifestUrl.find(':') != manifestUrl.find('/') - 1:
       url = urllib.parse.urljoin('gopher://' + manifestUrl, url)
       url = re.sub(r'^gopher://', '', url)
     else:
       url = urllib.parse.urljoin(manifestUrl, url)
+      
+    #_print("mainfest_xml 112 url= %s,manUrl=%s" % (url,manifestUrl))
     return url
 
   def ToRemoteSpec(self, projectName):
@@ -105,11 +109,7 @@ class _XmlRemote(object):
     remoteName = self.name
     if self.remoteAlias:
       remoteName = self.remoteAlias
-    return RemoteSpec(remoteName,
-                      url=url,
-                      pushUrl=self.pushUrl,
-                      review=self.reviewUrl,
-                      orig_name=self.name)
+    return RemoteSpec(remoteName, url, self.reviewUrl)
 
 class XmlManifest(object):
   """manages the repo configuration file"""
@@ -165,8 +165,6 @@ class XmlManifest(object):
     root.appendChild(e)
     e.setAttribute('name', r.name)
     e.setAttribute('fetch', r.fetchUrl)
-    if r.pushUrl is not None:
-      e.setAttribute('pushurl', r.pushUrl)
     if r.remoteAlias is not None:
       e.setAttribute('alias', r.remoteAlias)
     if r.reviewUrl is not None:
@@ -259,9 +257,9 @@ class XmlManifest(object):
         e.setAttribute('path', relpath)
       remoteName = None
       if d.remote:
-        remoteName = d.remote.name
-      if not d.remote or p.remote.orig_name != remoteName:
-        remoteName = p.remote.orig_name
+        remoteName = d.remote.remoteAlias or d.remote.name
+      if not d.remote or p.remote.name != remoteName:
+        remoteName = p.remote.name
         e.setAttribute('remote', remoteName)
       if peg_rev:
         if self.IsMirror:
@@ -277,7 +275,7 @@ class XmlManifest(object):
             # isn't our value
             e.setAttribute('upstream', p.revisionExpr)
       else:
-        revision = self.remotes[p.remote.orig_name].revision or d.revisionExpr
+        revision = self.remotes[remoteName].revision or d.revisionExpr
         if not revision or revision != p.revisionExpr:
           e.setAttribute('revision', p.revisionExpr)
         if p.upstream and p.upstream != p.revisionExpr:
@@ -616,6 +614,7 @@ class XmlManifest(object):
     if name is None:
       s = m_url.rindex('/') + 1
       manifestUrl = self.manifestProject.config.GetString('remote.origin.url')
+      _print("mainfest_xml 622 %s+ %s" % (m_url[:s],mainfest_xml))
       remote = _XmlRemote('origin', fetch=m_url[:s], manifestUrl=manifestUrl)
       name = m_url[s:]
 
@@ -646,9 +645,6 @@ class XmlManifest(object):
     if alias == '':
       alias = None
     fetch = self._reqatt(node, 'fetch')
-    pushUrl = node.getAttribute('pushurl')
-    if pushUrl == '':
-      pushUrl = None
     review = node.getAttribute('review')
     if review == '':
       review = None
@@ -656,7 +652,7 @@ class XmlManifest(object):
     if revision == '':
       revision = None
     manifestUrl = self.manifestProject.config.GetString('remote.origin.url')
-    return _XmlRemote(name, alias, fetch, pushUrl, manifestUrl, review, revision)
+    return _XmlRemote(name, alias, fetch, manifestUrl, review, revision)
 
   def _ParseDefault(self, node):
     """
@@ -741,6 +737,7 @@ class XmlManifest(object):
     name = self._reqatt(node, 'name')
     if parent:
       name = self._JoinName(parent.name, name)
+      
 
     remote = self._get_remote(node)
     if remote is None:
@@ -812,7 +809,7 @@ class XmlManifest(object):
     if self.IsMirror and node.hasAttribute('force-path'):
       if node.getAttribute('force-path').lower() in ("yes", "true", "1"):
         gitdir = os.path.join(self.topdir, '%s.git' % path)
-
+    
     project = Project(manifest = self,
                       name = name,
                       remote = remote.ToRemoteSpec(name),
@@ -982,5 +979,5 @@ class GitcManifest(XmlManifest):
   def _output_manifest_project_extras(self, p, e):
     """Output GITC Specific Project attributes"""
     if p.old_revision:
-      e.setAttribute('old-revision', str(p.old_revision))
+        e.setAttribute('old-revision', str(p.old_revision))
 
