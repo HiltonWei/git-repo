@@ -807,17 +807,15 @@ class Project(object):
       self._userident_name = ''
       self._userident_email = ''
 
- #在preject.py中添加Remote（operate,branch_name,url）方法：
+
   def Remote(self,operate,branch_name,url):
-     """Prune  topic branches already merged into upstream.
-     """
-    if url=="":   #rm
-       return GitCommand(self,
+    if url=="":#rm
+      return GitCommand(self,
                          ['remote', operate, branch_name],
                          capture_stdout = True,
                          capture_stderr = True).Wait() == 0
-    else:  #add
-       return GitCommand(self,
+    else:#add
+      return GitCommand(self,
                          ['remote', operate, branch_name,url],
                          capture_stdout = True,
                          capture_stderr = True).Wait() == 0

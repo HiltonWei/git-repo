@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# coding=utf-8
 #4 添加的remote指令
 # https://blog.csdn.net/jbhand/article/details/53283512
 # 在sumcmds中添加remote.py,程序如下：
