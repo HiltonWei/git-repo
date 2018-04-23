@@ -1,3 +1,4 @@
+# coding=utf-8
 # Copyright (C) 2008 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -819,6 +820,67 @@ class Project(object):
                          ['remote', operate, branch_name,url],
                          capture_stdout = True,
                          capture_stderr = True).Wait() == 0
+
+  #add UploadNoReview(opt, remoebranch,branch=branch.name)
+
+  def UploadNoReview(self, opt, remoebranch,branch=None):
+    """If not review server defined, uploads the named branch directly to git server.
+    """
+    #print >>sys.stdout, branch
+    now_branch=branch
+    if branch is None:
+      branch = self.CurrentBranch
+    if branch is None:
+      raise GitError('not currently on a branch')
+
+    branch = self.GetBranch(branch)
+
+    if not branch.LocalMerge:
+      raise GitError('branch %s does not track a remote' % branch.name)
+
+   # if opt.new_branch:
+   #   dest_branch = branch.name
+   # else:
+    dest_branch = branch.merge
+
+    if dest_branch.startswith(R_TAGS):
+      raise GitError('Can not push to TAGS (%s)! Run repo push with --new flag to create new feature branch.' % dest_branch)
+    if not dest_branch.startswith(R_HEADS):
+      dest_branch = R_HEADS + dest_branch
+
+    if not branch.remote.projectname:
+      branch.remote.projectname = self.name
+      branch.remote.Save()
+
+    # save git config branch.name.merge
+    # if opt.new_branch:
+    #  branch.merge = dest_branch
+    #  branch.Save()
+
+    ref_spec = '%s:%s' % (R_HEADS + branch.name, dest_branch)
+    pushurl = self.manifest.manifestProject.config.GetString('repo.%s.pushurl'
+              % branch.remote.name)
+    if not pushurl:
+      pushurl = self.manifest.manifestProject.config.GetString('repo.pushurl')
+    if not pushurl:
+      pushurl = branch.remote.name
+    else:
+      pushurl = pushurl.rstrip('/') + '/' + self.name
+      remote = self.manifest.remotes.get(branch.remote.name)
+      if remote and remote.autodotgit is not False:
+        pushurl += ".git"
+
+    cmd = ['push']
+    #print >>sys.stdout, now_branch+'now'
+    cmd.append(remoebranch)
+    cmd.append(now_branch)
+    print >>sys.stdout, "push"+" "+self.name+':'
+    if GitCommand(self, cmd).Wait() != 0:
+      raise UploadError('Upload failed')
+
+    if branch.LocalMerge and branch.LocalMerge.startswith('refs/remotes'):
+      self.bare_git.UpdateRef(branch.LocalMerge,
+                              R_HEADS + branch.name) 
 
   def GetRemote(self, name):
     """Get the configuration for a single remote.
