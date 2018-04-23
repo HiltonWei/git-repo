@@ -53,7 +53,11 @@ load-plugins=
 enable=RP0004
 
 # Disable the message(s) with the given id(s).
+<<<<<<< HEAD
 disable=R0903,R0912,R0913,R0914,R0915,W0141,C0111,C0103,W0603,W0703,R0911,C0301,C0302,R0902,R0904,W0142,W0212,E1101,E1103,R0201,W0201,W0122,W0232,RP0001,RP0003,RP0101,RP0002,RP0401,RP0701,RP0801,F0401,E0611,R0801,I0011
+=======
+disable=R0903,R0912,R0913,R0914,R0915,W0141,C0111,C0103,W0603,W0703,R0911,C0301,C0302,R0902,R0904,W0142,W0212,E1101,E1103,R0201,W0201,W0122,W0232,RP0001,RP0003,RP0101,RP0002,RP0401,RP0701,RP0801
+>>>>>>> 24278757f838150e3b368ba0aff2c12a7348babe
 
 [REPORTS]
 
@@ -61,6 +65,12 @@ disable=R0903,R0912,R0913,R0914,R0915,W0141,C0111,C0103,W0603,W0703,R0911,C0301,
 # (visual studio) and html
 output-format=text
 
+<<<<<<< HEAD
+=======
+# Include message's id in output
+include-ids=yes
+
+>>>>>>> 24278757f838150e3b368ba0aff2c12a7348babe
 # Put messages in a separate file for each module / package specified on the
 # command line instead of printing them on stdout. Reports (if any) will be
 # written in a file name "pylint_global.[txt|html]".

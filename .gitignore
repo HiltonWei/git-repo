@@ -1,6 +1,15 @@
+<<<<<<< HEAD
 *.pyc
 .repopickle_*
 /repoc
 _work
 tests-portable
 CREATING_NEW_VERSION
+=======
+bin
+workspace.xml
+*.bak
+*.pyc
+.repopickle_*
+.work
+>>>>>>> 24278757f838150e3b368ba0aff2c12a7348babe

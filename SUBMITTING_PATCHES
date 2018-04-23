@@ -4,9 +4,13 @@ Short Version:
  - Provide a meaningful commit message.
  - Check for coding errors with pylint
  - Make sure all code is under the Apache License, 2.0.
+<<<<<<< HEAD
  - Publish your changes for review.
  - Make corrections if requested.
  - Verify your changes on gerrit so they can be submitted.
+=======
+ - Publish your changes for review:
+>>>>>>> 24278757f838150e3b368ba0aff2c12a7348babe
 
    git push https://gerrit-review.googlesource.com/git-repo HEAD:refs/for/master
 
@@ -77,6 +81,7 @@ Ensure you have obtained an HTTP password to authenticate:
 
   https://gerrit-review.googlesource.com/new-password
 
+<<<<<<< HEAD
 Ensure that you have the local commit hook installed to automatically
 add a ChangeId to your commits:
 
@@ -88,6 +93,8 @@ to get the ChangeId added.
 
     git commit --amend
 
+=======
+>>>>>>> 24278757f838150e3b368ba0aff2c12a7348babe
 Push your patches over HTTPS to the review server, possibly through
 a remembered remote to make this easier in the future:
 
@@ -98,6 +105,7 @@ a remembered remote to make this easier in the future:
 
 You will be automatically emailed a copy of your commits, and any
 comments made by the project maintainers.
+<<<<<<< HEAD
 
 
 (5) Make changes if requested
@@ -113,3 +121,5 @@ After you receive a Code-Review+2 from the maintainer, select the Verified
 button on the gerrit page for the change. This verifies that you have tested
 your changes and notifies the maintainer that they are ready to be submitted.
 The maintainer will then submit your changes to the repository.
+=======
+>>>>>>> 24278757f838150e3b368ba0aff2c12a7348babe

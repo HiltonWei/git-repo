@@ -35,7 +35,11 @@ elif grep -q "AC Power \+: 1" /proc/pmu/info 2>/dev/null
 then
 	exit 0
 elif test -x /usr/bin/pmset && /usr/bin/pmset -g batt |
+<<<<<<< HEAD
 	grep -q "drawing from 'AC Power'"
+=======
+	grep -q "Currently drawing from 'AC Power'"
+>>>>>>> 24278757f838150e3b368ba0aff2c12a7348babe
 then
 	exit 0
 elif test -d /sys/bus/acpi/drivers/battery && test 0 = \

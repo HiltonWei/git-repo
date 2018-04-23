@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
+<<<<<<< HEAD
 	<name>git-repo</name>
+=======
+	<name>repo</name>
+>>>>>>> 24278757f838150e3b368ba0aff2c12a7348babe
 	<comment></comment>
 	<projects>
 	</projects>

@@ -1,7 +1,13 @@
 #!/bin/sh
+<<<<<<< HEAD
 # From Gerrit Code Review 2.12.1
 #
 # Part of Gerrit Code Review (https://www.gerritcodereview.com/)
+=======
+# From Gerrit Code Review 2.5-rc0
+#
+# Part of Gerrit Code Review (http://code.google.com/p/gerrit/)
+>>>>>>> 24278757f838150e3b368ba0aff2c12a7348babe
 #
 # Copyright (C) 2009 The Android Open Source Project
 #
@@ -18,16 +24,24 @@
 # limitations under the License.
 #
 
+<<<<<<< HEAD
 unset GREP_OPTIONS
 
 CHANGE_ID_AFTER="Bug|Issue|Test"
+=======
+CHANGE_ID_AFTER="Bug|Issue"
+>>>>>>> 24278757f838150e3b368ba0aff2c12a7348babe
 MSG="$1"
 
 # Check for, and add if missing, a unique Change-Id
 #
 add_ChangeId() {
 	clean_message=`sed -e '
+<<<<<<< HEAD
 		/^diff --git .*/{
+=======
+		/^diff --git a\/.*/{
+>>>>>>> 24278757f838150e3b368ba0aff2c12a7348babe
 			s///
 			q
 		}
@@ -39,6 +53,7 @@ add_ChangeId() {
 		return
 	fi
 
+<<<<<<< HEAD
 	# Do not add Change-Id to temp commits
 	if echo "$clean_message" | head -1 | grep -q '^\(fixup\|squash\)!'
 	then
@@ -50,6 +65,8 @@ add_ChangeId() {
 		return
 	fi
 
+=======
+>>>>>>> 24278757f838150e3b368ba0aff2c12a7348babe
 	# Does Change-Id: already exist? if so, exit (no change).
 	if grep -i '^Change-Id:' "$MSG" >/dev/null
 	then
@@ -64,10 +81,13 @@ add_ChangeId() {
 		AWK=/usr/xpg4/bin/awk
 	fi
 
+<<<<<<< HEAD
 	# Get core.commentChar from git config or use default symbol
 	commentChar=`git config --get core.commentChar`
 	commentChar=${commentChar:-#}
 
+=======
+>>>>>>> 24278757f838150e3b368ba0aff2c12a7348babe
 	# How this works:
 	# - parse the commit message as (textLine+ blankLine*)*
 	# - assume textLine+ to be a footer until proven otherwise
@@ -86,13 +106,22 @@ add_ChangeId() {
 		blankLines = 0
 	}
 
+<<<<<<< HEAD
 	# Skip lines starting with commentChar without any spaces before it.
 	/^'"$commentChar"'/ { next }
+=======
+	# Skip lines starting with "#" without any spaces before it.
+	/^#/ { next }
+>>>>>>> 24278757f838150e3b368ba0aff2c12a7348babe
 
 	# Skip the line starting with the diff command and everything after it,
 	# up to the end of the file, assuming it is only patch data.
 	# If more than one line before the diff was empty, strip all but one.
+<<<<<<< HEAD
 	/^diff --git / {
+=======
+	/^diff --git a/ {
+>>>>>>> 24278757f838150e3b368ba0aff2c12a7348babe
 		blankLines = 0
 		while (getline) { }
 		next
@@ -169,7 +198,11 @@ add_ChangeId() {
 		if (unprinted) {
 			print "Change-Id: I'"$id"'"
 		}
+<<<<<<< HEAD
 	}' "$MSG" > "$T" && mv "$T" "$MSG" || rm -f "$T"
+=======
+	}' "$MSG" > $T && mv $T "$MSG" || rm -f $T
+>>>>>>> 24278757f838150e3b368ba0aff2c12a7348babe
 }
 _gen_ChangeIdInput() {
 	echo "tree `git write-tree`"
